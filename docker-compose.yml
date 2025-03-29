@@ -5,7 +5,7 @@ services:
     environment:
       - POSTGRES_USER=gouser
       - POSTGRES_PASSWORD=gopass
-      - POSTGRES_DATABASE=go_db
+      - POSTGRES_DB=godb
     ports:
       - "5434:5432"
     volumes:
