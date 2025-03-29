@@ -25,11 +25,12 @@ func (pr *ProductRepository) GetProducts() ([]models.Product, error) {
 		fmt.Println(err)
 		return []models.Product{}, err
 	}
+	defer rows.Close()
 
 	var productList []models.Product
-	var productObj models.Product
 
 	for rows.Next() {
+		var productObj models.Product
 		err = rows.Scan(
 			&productObj.ID,
 			&productObj.Name,
@@ -42,7 +43,28 @@ func (pr *ProductRepository) GetProducts() ([]models.Product, error) {
 
 		productList = append(productList, productObj)
 	}
-	rows.Close()
 
 	return productList, nil
+}
+
+func (pr *ProductRepository) CreateProduct(product models.Product) (int, error) {
+	var id int
+	query, err := pr.connection.Prepare(
+		`INSERT INTO product (product_name, price)
+		VALUES ($1, $2) 
+		RETURNING id
+	`)
+	if err != nil {
+		fmt.Println(err)
+		return 0, err
+	}
+	defer query.Close()
+
+	err = query.QueryRow(product.Name, product.Price).Scan(&id)
+	if err != nil {
+		fmt.Println(err)
+		return 0, err
+	}
+
+	return id, nil
 }
